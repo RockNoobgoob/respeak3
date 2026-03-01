@@ -77,6 +77,11 @@ Temporary Items
 *~
 
 # ========================
+# Claude Code (local only)
+# ========================
+.claude/settings.local.json
+
+# ========================
 # Environment
 # ========================
 .env
