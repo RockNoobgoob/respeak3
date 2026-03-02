@@ -1,0 +1,3 @@
+[submodule "brandkit"]
+	path = brandkit
+	url = https://github.com/rockNoobgoob/respeak3-brandkit.git
