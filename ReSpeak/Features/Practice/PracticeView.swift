@@ -13,6 +13,10 @@ struct PracticeView: View {
 
     @StateObject private var viewModel = PracticeViewModel()
 
+    /// Set to a selected exercise to push into a session.
+    /// Cleared automatically when the sheet dismisses.
+    @State private var sessionExercise: ExerciseDefinition?
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -35,6 +39,36 @@ struct PracticeView: View {
             .navigationBarTitleDisplayMode(.large)
             .task {
                 await viewModel.loadExercises()
+            }
+            // MARK: - Session Sheet
+            // Presents ExerciseSessionView as a full-screen cover so the session
+            // has the full display without the tab bar visible behind it.
+            .fullScreenCover(item: $sessionExercise) { exercise in
+                NavigationStack {
+                    ExerciseSessionView(
+                        viewModel: ExerciseSessionViewModel(exercise: exercise)
+                    ) { state in
+                        // TODO: Replace this stub with a real exercise-type router
+                        // that inspects `exercise.category` (or a type discriminator
+                        // in `ExerciseItem.payload`) and renders the matching content view.
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
+                            if let item = state.currentItem {
+                                Text(item.prompt)
+                                    .brandStyle(.body)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            } else {
+                                Text("Loading…")
+                                    .brandStyle(.callout)
+                            }
+                        }
+                    }
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") { sessionExercise = nil }
+                                .foregroundStyle(BrandColors.primary)
+                        }
+                    }
+                }
             }
         }
     }
@@ -107,7 +141,11 @@ struct PracticeView: View {
         VStack(spacing: Spacing.sm) {
             ForEach(viewModel.exercises) { exercise in
                 Button {
-                    Task { await viewModel.selectExercise(exercise) }
+                    // Drive the full-screen session cover.
+                    // ExerciseSessionViewModel creates its own session row via
+                    // ExerciseSessionEngine, so PracticeViewModel.selectExercise
+                    // is no longer needed here.
+                    sessionExercise = exercise
                 } label: {
                     ExerciseRowView(
                         title: exercise.title,
